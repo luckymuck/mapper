@@ -3,8 +3,7 @@
 A privacy-first web app that turns your location history (Google, Apple, or photos)
 into a map, highlighting everywhere you've been:
 
-- **Visited regions** — every country, state/province, and (for the US) county you've set foot in
-- **Reachable area** — a highlight of all areas within a chosen radius (default 50 km) of where you've been
+- **Visited regions** — every country, state/province, and county you've set foot in, shaded at the finest level available per country (county where the data exists, otherwise state/province, otherwise the country itself)
 - **Recency coloring** — how recently you were last at each place
 - **Duration coloring** — estimated time spent in each area
 - **Rainbow history** — the whole timeline painted as a rainbow (oldest → newest)
@@ -16,11 +15,12 @@ Everything runs **entirely in your browser**. Your files never leave your device
 Just open `index.html` in a browser (double-click works — no server needed), or
 serve the folder with any static file server.
 
-> **Map tiles:** the default basemap is CARTO, which works when opened straight
-> from disk. The OpenStreetMap option requires a valid HTTP Referer and will
-> show a 403 tile block when opened via `file://` — use it when the app is
-> served over HTTP (e.g. `python -m http.server` or any static host). Esri
-> street/satellite are also available.
+> **Map tiles:** the default basemap is **Esri light** (free, keyless, works from
+> `file://`). **Esri dark**, **Esri World**, **Esri Satellite**, and
+> **OpenStreetMap** are also available. If a provider can't be reached, the app
+> automatically falls back to the next one (bounded to a single switch) and, if
+> all are unreachable, shows a bundled offline world outline so the map is never
+> blank.
 
 1. **Drop your data** onto the upload zone (or click it):
    - Google Takeout — a `.zip` or the extracted `.json` files
@@ -39,7 +39,7 @@ serve the folder with any static file server.
    OpenStreetMap Nominatim (the text is sent to that service).
 3. Use the sidebar to change **region level** (Country / State / County),
    **color metric** (Last visited / Time spent / Visit count / Rainbow by date),
-   the **reach radius**, and toggle layers.
+   and toggle layers.
 4. **Multiple files**: dragging in more files adds them to the current map
    (deduplicated); **Clear** starts over.
 5. **Show all region outlines** draws every country / every subdivision of visited
@@ -61,8 +61,8 @@ serve the folder with any static file server.
    machine (default: visited regions + summary stats only, no raw positions).
    Exported `.mapper.json` files can be **re-imported** to restore the saved
    visited set (regions become manual additions).
-8. The points stat shows **shown / total** (e.g. `1,000 / 1,794`) whenever the
-   200k cap or a filter reduces what's displayed.
+8. The points stat shows **shown / total** (e.g. `1,000 / 1,794`) whenever a
+   filter (date range, day/year, or accuracy) reduces what's displayed.
 
 ## Supported data sources
 
@@ -82,12 +82,11 @@ Canonical internal model: **points** `{lat, lng, ts, acc}` and **visits**
 
 - **Regions**: points are classified against admin-boundary polygons using an
   `rbush` bounding-box index + ray-cast point-in-polygon (even-odd across holes).
-  Large histories (>60k points) are aggregated onto a ~1 km grid and the grid
-  representatives are classified for speed.
-- **Reachable area (50 km)**: a raster mask of "within radius of any occupied
-  cell" computed with geodesic (haversine) distances, painted with a rasterized
-  circle per occupied cell. Shown as a colored heat canvas (Web-Mercator-correct)
-  plus a simplified vector outline (marching-squares tracing + Douglas-Peucker).
+  At **county view** each country is shaded at its finest available level
+  (county → state → country). Large histories (>25k points) are aggregated onto
+  a ~1 km grid and the grid representatives are classified for speed.
+- **Heat grid**: an occupancy heat canvas (Web-Mercator-correct) of where points
+  cluster, colored by the selected metric.
 - **Recency / duration / count / rainbow**: per-region and per-cell metrics are
   mapped through color ramps (log scales). The heat grid and region choropleth
   share the selected metric. The rainbow sweeps hue 0→330 across the timeline.
@@ -97,16 +96,18 @@ Canonical internal model: **points** `{lat, lng, ts, acc}` and **visits**
 - **Countries**: Natural Earth (via `datasets/geo-countries`), bundled offline, all countries, ~2.8 MB.
 - **States/provinces**: Natural Earth 10m admin-1, bundled offline, ~7.8 MB, every country.
 - **Counties**: US counties bundled offline (~2.2 MB), plus **ADM2 (county-level)
-  data bundled for Canada, UK, Australia, Germany, France, and Japan** (~3.6 MB,
-  from geoBoundaries) — Canada shows census divisions rather than just provinces.
-  For other countries the app falls back per country to state/province, then to
-  country level, and labels each region with the level actually shown. Real county
-  polygons for other countries can be fetched on demand from
+  data bundled for Canada, UK, Australia, Germany, France, Japan, Italy, the
+  Netherlands, and Spain** (~4 MB, from geoBoundaries) — Canada shows census
+  divisions rather than just provinces. For other countries the app falls back
+  per country to state/province, then to country level — at county view each is
+  shaded at the finest level actually available. Real county polygons for other
+  countries can be fetched on demand from
   [geoBoundaries](https://www.geoboundaries.org/) (CC BY 4.0) by enabling
   **Online boundary detail** — note this shares the list of countries you've
   visited with a third-party CORS proxy. Online lookups are time-boxed and run in
   the background, so the map always renders immediately with offline data
-  (states) and upgrades to real counties as they arrive.
+  (states) and upgrades to real counties as they arrive. Successful downloads
+  are cached locally (IndexedDB) for later offline use.
 
 Boundaries are pre-simplified by `tools/build-data.js` and inlined as classic JS
 scripts (`data/*.js`) so the app works from disk with no network dependency for the
@@ -170,7 +171,7 @@ cd tools/e2e && node e2e.js # full browser test via installed Edge
 
 ## Attribution
 
-- Map tiles © OpenStreetMap contributors, CARTO.
+- Map tiles © OpenStreetMap contributors, Esri.
 - Country boundaries: Natural Earth / `datasets/geo-countries`.
 - States/provinces: Natural Earth admin-1 (10m).
 - US counties: US Census via `us-atlas`.
@@ -184,6 +185,7 @@ cd tools/e2e && node e2e.js # full browser test via installed Edge
   histories above ~25k points use fast grid-cell aggregation instead of per-point
   testing.
 - Photo EXIF requires the original camera files; social-media uploads usually strip GPS.
-- County-level polygons outside the US aren't bundled; those countries automatically
-  fall back to state/province (and then country) level, with real counties available
-  via the opt-in online lookup.
+- County-level polygons are bundled for a starter set (US + 8 other countries);
+  other countries automatically fall back to state/province (and then country)
+  level at county view, with real counties available via the opt-in online
+  lookup (cached for later sessions).
