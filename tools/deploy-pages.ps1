@@ -1,19 +1,18 @@
 # tools/deploy-pages.ps1 — build the release and push it to GitHub Pages.
 #
-# Automates the manual steps from "PLAN re Release.md":
-#   2. Build the release:   node tools/make-release.js
-#   3. Put release/ on a gh-pages orphan branch and push.
+# Publishes the built release/ folder to the gh-pages branch (site-only: no dev
+# files), pushes it, and returns the working tree to main.
 #
 # Usage:
-#   powershell -File tools\deploy-pages.ps1 -Repo https://github.com/<user>/mapper.git
+#   powershell -File tools\deploy-pages.ps1 [-Repo <url>] [-SkipBuild]
 #
 # Args:
-#   -Repo   remote URL. If omitted, uses the existing 'origin' remote, or prompts.
+#   -Repo       remote URL. If omitted, uses the existing 'origin' remote.
 #   -SkipBuild  skip `node tools/make-release.js` (re-push an existing release/).
 #
-# Prereqs: git, node, and (for creation) a GitHub account. The GitHub repo must
-# already exist (public, for free Pages). First deploy takes ~1 minute; the site
-# is then at https://<user>.github.io/<repo>/.
+# Prereqs: git, node, an existing GitHub repo (public for free Pages), and
+# GitHub Pages enabled with Source = "Deploy from a branch" -> gh-pages / root.
+# Site URL: https://<user>.github.io/<repo>/
 param(
     [string]$Repo = "",
     [switch]$SkipBuild
@@ -31,39 +30,43 @@ if (-not $SkipBuild) {
     Write-Host "== Skipping build (reusing release/) =="
 }
 
-# Determine the remote URL.
-if (-not $Repo) {
-    $existing = git config --get remote.origin.url 2>$null
-    if ($existing) { $Repo = $existing } 
-    else { $Repo = Read-Host "GitHub repo URL (e.g. https://github.com/<user>/mapper.git)" }
-}
+# Publish from a clean main (the dev source branch).
+git checkout main
+if ($LASTEXITCODE -ne 0) { throw "could not switch to main" }
 
-# Init git if needed.
-if (-not (Test-Path (Join-Path $Root ".git"))) {
-    git init | Out-Host
-}
-
-# Create an orphan branch whose root is release/ (the site), keeping dev files
-# out of the published branch.
-git checkout --orphan gh-pages 2>$null | Out-Host
+# Replace the local gh-pages branch wholesale (history-less site deploys).
+git branch -D gh-pages 2>$null | Out-Host
+git checkout --orphan gh-pages
 if ($LASTEXITCODE -ne 0) { throw "could not create gh-pages branch" }
-# Remove everything currently tracked (from prior publishes) so we can replace
-# the tree with a clean copy of release/.
-git rm -rf --cached . 2>$null | Out-Host
+
+# Clear every tracked file from the orphan branch (index + working tree).
 git rm -rf . 2>$null | Out-Host
-# Stage only release/ at the branch root.
+
+# Stage ONLY the release contents at the branch root.
 Get-ChildItem -Path (Join-Path $Root "release") -Force | ForEach-Object {
     Copy-Item -Recurse -Force $_.FullName (Join-Path $Root $_.Name)
 }
-# .nojekyll so GitHub Pages serves files as-is (no Jekyll build).
+# .nojekyll: serve files as-is (no Jekyll build).
 Set-Content -Path (Join-Path $Root ".nojekyll") -Value "" -NoNewline
+# Reuse main's full .gitignore (not a trimmed one) so a git add -A here can
+# never pull in node_modules, tmp artifacts, secrets, or build outputs.
+git show main:.gitignore | Set-Content (Join-Path $Root ".gitignore")
 
 git add -A | Out-Host
-git commit -m "release" 2>$null | Out-Host
+git commit -m "release site" 2>$null | Out-Host
 
+# Restore the dev working tree before pushing.
+git checkout main
+if ($LASTEXITCODE -ne 0) { throw "could not return to main" }
+
+if (-not $Repo) {
+    $Repo = git config --get remote.origin.url 2>$null
+    if (-not $Repo) { $Repo = Read-Host "GitHub repo URL (e.g. https://github.com/<user>/mapper.git)" }
+}
 git remote remove origin 2>$null | Out-Host
 git remote add origin $Repo
+
 git push --force -u origin gh-pages
-Write-Host "== Pushed to $Repo / gh-pages =="
-Write-Host "Enable Pages: Settings -> Pages -> Deploy from a branch -> gh-pages / root"
-Write-Host "Site URL (after enabling Pages): https://<user>.github.io/<repo>/"
+Write-Host "== Pushed gh-pages to $Repo =="
+Write-Host "Enable Pages: repo Settings -> Pages -> Deploy from a branch -> gh-pages / root"
+Write-Host "Site URL: https://<user>.github.io/<repo>/"
