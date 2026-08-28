@@ -1,0 +1,22 @@
+{
+  "semanticSegments": [
+    {
+      "startTime": "2020-01-01T12:00:00Z",
+      "endTime": "2020-01-01T12:30:00Z",
+      "activity": { "activityType": "IN_BUS" },
+      "timelinePath": [
+        { "point": "37.774900,-122.419400", "time": "2020-01-01T12:00:00Z" },
+        { "point": "37.775000,-122.419300", "time": "2020-01-01T12:10:00Z" },
+        { "point": "37.775500,-122.418800", "time": "2020-01-01T12:20:00Z" }
+      ]
+    },
+    {
+      "startTime": "2020-01-01T13:00:00Z",
+      "endTime": "2020-01-01T14:00:00Z",
+      "placeVisit": {
+        "location": { "latitudeE7": 407128000, "longitudeE7": -740060000, "placeId": "ChIJY", "address": "New York, NY" },
+        "duration": { "startTimestampMs": "1577880000000", "endTimestampMs": "1577883600000" }
+      }
+    }
+  ]
+}

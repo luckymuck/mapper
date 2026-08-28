@@ -1,0 +1,12 @@
+{
+  "timelineObjects": [
+    {
+      "activitySegment": {
+        "activityType": "FLYING",
+        "duration": { "startTimestampMs": "1704067200000", "endTimestampMs": "1704070800000" },
+        "startLocation": { "latitudeE7": 515074000, "longitudeE7": -12780000 },
+        "endLocation": { "latitudeE7": 407128000, "longitudeE7": -740060000 }
+      }
+    }
+  ]
+}

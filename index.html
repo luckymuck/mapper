@@ -1,0 +1,338 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Mapper — Location History Visualizer</title>
+<link rel="stylesheet" href="lib/leaflet.css">
+<link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+
+<aside id="sidebar">
+  <div class="hd-row">
+    <h1>Mapper</h1>
+    <button id="btn-about" class="btn ghost small">About</button>
+  </div>
+
+  <section class="card">
+    <h2>Import</h2>
+    <div id="dropzone">
+      <input type="file" id="file-input" multiple hidden>
+      <div class="dz-inner">
+        <strong>Drop Files or Browse</strong>
+        <small>Google Takeout (.zip or .json), CSV, GPX, photos (JPEG/HEIC), Google Photos supplemental-metadata.json, or a .mapper.json from the desktop tool. Files add to the current map — use Clear all data to start over.</small>
+      </div>
+    </div>
+    <div class="row">
+      <button id="btn-demo" class="btn">Load demo</button>
+      <button id="btn-clear" class="btn ghost">Clear all data</button>
+    </div>
+    <div id="import-log" class="import-log"></div>
+    <button id="btn-clear-log" class="btn ghost small">Clear log</button>
+  </section>
+
+  <section class="card">
+    <h2>Add and Edit</h2>
+    <div class="row">
+      <button id="btn-add-points" class="btn">Points by Text</button>
+      <button id="btn-add-trip" class="btn ghost">Trip by Text</button>
+    </div>
+    <div class="row">
+      <button id="btn-draw-trip" class="btn ghost">Draw Trip</button>
+      <button id="btn-edit-mode" class="btn ghost">Edit</button>
+    </div>
+  </section>
+
+  <section class="card">
+    <div class="row">
+      <button id="btn-export" class="btn">Export…</button>
+    </div>
+  </section>
+
+  <div id="status" class="status hidden"></div>
+
+  <section id="summary" class="card hidden">
+    <div class="line"><span class="lbl">Points</span><span id="stat-points" class="val">0</span><span class="lbl">Visits</span><span id="stat-visits" class="val">0</span></div>
+    <div class="line"><span class="lbl">Date range</span><span id="stat-range" class="val">–</span></div>
+    <div class="line"><span class="lbl">Sources</span><span id="stat-sources" class="val">–</span></div>
+  </section>
+
+  <section class="card">
+    <h2>Display</h2>
+    <h3 class="sub">View options</h3>
+    <label class="check"><input type="checkbox" id="l-regions" checked> Visited regions</label>
+    <label class="line indent">Level
+      <select id="c-level">
+        <option value="country">Country</option>
+        <option value="state">State / Province</option>
+        <option value="county" selected>County</option>
+      </select>
+    </label>
+    <label class="line indent">Color
+      <span class="ctrl">
+        <select id="c-metric">
+          <option value="recency" selected>Last visited (recency)</option>
+          <option value="dwell">Time spent (duration)</option>
+          <option value="count">Number of visits</option>
+          <option value="rainbow">Rainbow by date (history)</option>
+          <option value="single">Single color</option>
+        </select>
+        <input type="color" id="c-single-color" value="#4c8dff" class="hidden">
+      </span>
+    </label>
+    <label class="check"><input type="checkbox" id="l-heat"> Heat grid</label>
+    <label class="line indent">Size
+      <select id="c-res">
+        <option value="2">2 km</option>
+        <option value="5" selected>5 km</option>
+        <option value="10">10 km</option>
+        <option value="20">20 km</option>
+      </select>
+    </label>
+    <label class="check"><input type="checkbox" id="l-trail" checked> Path trail</label>
+    <label class="check"><input type="checkbox" id="l-visits"> Visit markers</label>
+    <label class="check"><input type="checkbox" id="l-outlines" checked> Show region outlines</label>
+    <label class="check"><input type="checkbox" id="c-online" checked> Show boundary detail</label>
+    <label class="check"><input type="checkbox" id="l-places"> All places</label>
+    <label class="line">Map
+      <select id="c-basemap">
+        <option value="light" selected>Esri light</option>
+        <option value="dark">Esri dark</option>
+        <option value="osm">OpenStreetMap</option>
+        <option value="esri">Esri World</option>
+        <option value="esri-sat">Esri Satellite</option>
+      </select>
+    </label>
+    <label class="line">Max trail points
+      <select id="c-trail-max">
+        <option value="20000">20k</option>
+        <option value="50000" selected>50k</option>
+        <option value="100000">100k</option>
+        <option value="200000">200k</option>
+      </select>
+    </label>
+  </section>
+
+  <section class="card">
+    <h2>Date browser</h2>
+    <div class="radio-group" id="db-modes">
+      <label class="check"><input type="radio" name="db-mode" value="range" checked> Date range</label>
+      <label class="check"><input type="radio" name="db-mode" value="day"> Day</label>
+      <label class="check"><input type="radio" name="db-mode" value="year"> Year</label>
+    </div>
+    <div id="db-range" class="db-opts">
+      <label class="line">From <input type="date" id="f-from"></label>
+      <label class="line">To <input type="date" id="f-to"></label>
+    </div>
+    <div id="db-day" class="db-opts hidden">
+      <div class="row">
+        <button type="button" class="btn ghost" id="db-prev">◀ Prev</button>
+        <input type="date" id="f-day">
+        <button type="button" class="btn ghost" id="db-next">Next ▶</button>
+      </div>
+      <div class="row">
+        <button type="button" class="btn ghost" id="db-prev-data">◀ Prev with data</button>
+        <button type="button" class="btn ghost" id="db-next-data">Next with data ▶</button>
+      </div>
+    </div>
+    <div id="db-year" class="db-opts hidden">
+      <label class="line">Year <select id="f-year"></select></label>
+    </div>
+    <label class="line">Max accuracy <input type="number" id="f-accuracy" value="1000" min="1" step="10"> m</label>
+    <div id="db-stats" class="db-stats muted"></div>
+  </section>
+
+  <div id="legend" class="legend hidden"></div>
+
+  <footer>
+    Data © OpenStreetMap contributors · Boundaries: Natural Earth / geoBoundaries (CC BY 4.0)
+    <br><em>Your files never leave this device.</em>
+  </footer>
+</aside>
+
+<main id="map"></main>
+
+<div id="busy" class="hidden"><div class="spinner"></div><span id="busy-text">Working…</span></div>
+
+<div id="export-modal" class="modal hidden">
+  <div class="modal-box">
+    <h2>Export</h2>
+    <p class="muted">Choose what to include. Anything you leave unchecked is <b>not</b> written to the file — the defaults share only visited regions and summary stats.</p>
+    <section class="card">
+      <h3>Data file (.mapper.json)</h3>
+      <label class="check"><input type="checkbox" id="x-regions" checked> Visited regions + summary stats</label>
+      <label class="check"><input type="checkbox" id="x-points"> Track points (exact positions)</label>
+      <label class="check indent"><input type="checkbox" id="x-times" checked> Exact timestamps (else date-only)</label>
+      <label class="check"><input type="checkbox" id="x-visits"> Visits</label>
+      <label class="check indent"><input type="checkbox" id="x-addresses" checked> Visit addresses / place IDs</label>
+      <label class="check"><input type="checkbox" id="x-manual" checked> Manual edits</label>
+      <label>Coordinate precision
+        <select id="x-precision">
+          <option value="3">3 decimals (~111 m)</option>
+          <option value="4">4 decimals (~11 m)</option>
+          <option value="5">5 decimals (~1 m)</option>
+          <option value="6" selected>6 decimals (full)</option>
+        </select>
+      </label>
+    </section>
+    <div class="row wrap">
+      <button id="x-data" class="btn">Download .mapper.json</button>
+      <button id="x-overlays" class="btn ghost">Download overlays .geojson</button>
+      <button id="x-kml" class="btn ghost">Download .kml</button>
+      <button id="x-settings" class="btn ghost">Download settings .json</button>
+      <button id="x-close" class="btn ghost">Close</button>
+    </div>
+  </div>
+</div>
+
+<div id="about-modal" class="modal hidden">
+  <div class="modal-box">
+    <h2>About Mapper</h2>
+    <p class="muted">Mapper is a private, local visualizer for your location history. It turns Google Takeout, photo GPS, CSV/GPX, and typed places into maps of where you've been — visited regions, trails, trips, and a heat grid.</p>
+    <p class="muted"><b>Runs locally.</b> Your files and location data never leave this device. Everything is processed in your browser.</p>
+    <p class="muted"><b>What's shared:</b> to show county boundaries for countries outside the bundled set, Mapper optionally fetches them from geoBoundaries and sends the list of visited country codes to a CORS proxy (allorigins). Map tiles come from Esri / OpenStreetMap, and place lookups use OpenStreetMap Nominatim. Basemap © OpenStreetMap contributors.</p>
+    <p class="muted">Boundary data: Natural Earth / geoBoundaries (CC BY 4.0). Built with Leaflet, JSZip, exifr, and rbush.</p>
+    <div class="row">
+      <button id="about-close" class="btn">Close</button>
+    </div>
+  </div>
+</div>
+
+<div id="add-modal" class="modal hidden">
+  <div class="modal-box">
+    <h2>Add points</h2>
+    <p class="muted">One per line: a place name or coordinates, then an optional date.
+      Examples:<br>
+      <b>Los Angeles, California, USA 8/15/2026</b> — also accepts 8/15/26 or 15 Aug 2026<br>
+      34.0522, -118.2437 2026-08-15<br>
+      Paris, France 15 Aug 2026<br>
+      25°04'50.0"N 121°13'37.3"E</p>
+    <p class="muted">For best results, use <b>City, Country</b> (e.g. "Bangkok, Thailand"). If a place isn't found, the search progressively simplifies — you don't need to do anything.</p>
+    <textarea id="add-input" rows="8" spellcheck="false" placeholder="Los Angeles, California, USA 8/15/2026&#10;Paris, France 15 Aug 2026&#10;34.0522, -118.2437 8/15/26"></textarea>
+    <div class="row">
+      <button id="add-submit" class="btn">Add to map</button>
+      <button id="add-cancel" class="btn ghost">Cancel</button>
+    </div>
+  </div>
+</div>
+
+<div id="trip-modal" class="modal hidden">
+  <div class="modal-box">
+    <h2>Add trip</h2>
+    <p class="muted">Name the trip and set a start/end date, then list the stops (a place or coordinates, one per line).
+      Dates are spread evenly across the stops; a per-line date overrides that stop's date.
+      For best results use <b>City, Country</b> (e.g. "Chiang Mai, Thailand").</p>
+    <label>Trip name <input type="text" id="trip-name" placeholder="Summer 2026"></label>
+    <label>Start date <input type="date" id="trip-start"></label>
+    <label>End date <input type="date" id="trip-end"></label>
+    <textarea id="trip-input" rows="6" spellcheck="false" placeholder="Los Angeles, California, USA&#10;San Francisco, USA&#10;Tokyo, Japan 15 Aug 2026&#10;34.0522, -118.2437"></textarea>
+    <div class="row">
+      <button id="trip-submit" class="btn">Add trip</button>
+      <button id="trip-cancel" class="btn ghost">Cancel</button>
+    </div>
+  </div>
+</div>
+
+<div id="supp-modal" class="modal hidden">
+  <div class="modal-box">
+    <h2>Photo locations found</h2>
+    <p class="muted">Found <span id="supp-count">0</span> photo locations with GPS data. What would you like to do?</p>
+    <div class="radio-group">
+      <label class="check"><input type="radio" name="supp-mode" value="points" checked> Add as individual points (trail + heatmap)</label>
+      <label class="check"><input type="radio" name="supp-mode" value="trip"> Create as a trip (ordered by photo date)</label>
+    </div>
+    <div id="supp-trip-opts" class="hidden">
+      <label>Trip name <input type="text" id="supp-trip-name" placeholder="Photo trip"></label>
+    </div>
+    <div class="row">
+      <button id="supp-ok" class="btn">OK</button>
+      <button id="supp-cancel" class="btn ghost">Cancel</button>
+    </div>
+  </div>
+</div>
+
+<div id="draw-bar" class="draw-bar hidden">
+  <span>Drawing trip — <b id="draw-count">0</b> stops</span>
+  <label>Start <input type="date" id="draw-start"></label>
+  <label>End <input type="date" id="draw-end"></label>
+  <button id="draw-finish" class="btn">Finish</button>
+  <button id="draw-cancel" class="btn ghost">Cancel</button>
+</div>
+
+<aside id="edit-sidebar" class="hidden">
+  <div class="edit-guide">
+    <h3>How to edit</h3>
+    <ul>
+      <li><b>Left-click</b> a region to add or remove it</li>
+      <li><b>Shift-click</b> to select several regions</li>
+      <li><b>Right-click</b> a region to edit its dates</li>
+      <li>Click a country to load its states/counties</li>
+    </ul>
+  </div>
+  <div class="edit-block">
+    <h3>Selected region</h3>
+    <div class="det-row"><b id="rd-name">–</b><span id="rd-where" class="muted"></span></div>
+    <div id="rd-current" class="muted"></div>
+    <label class="line">First visit <input type="date" id="rd-first"></label>
+    <label class="line">Last visit <input type="date" id="rd-last"></label>
+    <div class="row">
+      <button id="rd-save" class="btn">Save</button>
+      <button id="rd-clear" class="btn ghost">Clear</button>
+      <button id="rd-toggle" class="btn ghost">In/out</button>
+    </div>
+    <div class="row">
+      <button id="rd-prev" class="btn ghost">◀ Prev</button>
+      <button id="rd-next" class="btn ghost">Next ▶</button>
+    </div>
+  </div>
+  <div class="edit-block bulk">
+    <h3>Bulk actions</h3>
+    <div id="rd-sel" class="muted"></div>
+    <div id="rd-status" class="muted"></div>
+    <label class="line">Set First <input type="date" id="rd-bfirst"></label>
+    <label class="line">Set Last <input type="date" id="rd-blast"></label>
+    <div class="row">
+      <button id="rd-bapply" class="btn">Set dates (selected)</button>
+      <button id="rd-bclear" class="btn ghost">Clear dates (selected)</button>
+    </div>
+    <div class="row shift-row">
+      <label class="shift">Shift all dates <input type="number" id="rd-shift" value="0" min="-9999" max="9999" step="1"> days</label>
+      <button id="rd-shift-apply" class="btn ghost">Apply</button>
+    </div>
+    <button id="rd-country" class="btn ghost">Set dates for this country</button>
+    <button id="btn-reset-edits" class="btn ghost">Reset edits</button>
+  </div>
+  <div id="point-block" class="edit-block hidden">
+    <h3>Selected point</h3>
+    <div id="pt-info" class="muted">–</div>
+    <label class="line">Date <input type="date" id="pt-date"></label>
+    <label class="line">Latitude <input type="number" id="pt-lat" step="any"></label>
+    <label class="line">Longitude <input type="number" id="pt-lng" step="any"></label>
+    <div class="row">
+      <button id="pt-save" class="btn">Save</button>
+      <button id="pt-remove" class="btn ghost">Remove</button>
+    </div>
+  </div>
+</aside>
+
+<script src="lib/leaflet.js"></script>
+<script src="lib/jszip.min.js"></script>
+<script src="lib/exifr.full.umd.js"></script>
+<script src="lib/rbush.min.js"></script>
+
+<script src="data/countries.js"></script>
+<script src="data/states.js"></script>
+<script src="data/us-counties.js"></script>
+<script src="data/adm2.js"></script>
+<script src="js/model.js"></script>
+<script src="js/color.js"></script>
+<script src="js/geo.js"></script>
+<script src="js/geocode.js"></script>
+<script src="js/export.js"></script>
+<script src="js/boundaries.js"></script>
+<script src="js/parsers.js"></script>
+<script src="js/ui.js"></script>
+<script src="js/main.js"></script>
+</body>
+</html>

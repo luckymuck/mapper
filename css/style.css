@@ -1,0 +1,312 @@
+:root {
+  --bg: #0f1115;
+  --panel: #171a21;
+  --panel2: #1e2230;
+  --border: #2a3040;
+  --text: #dbe2ee;
+  --muted: #8a93a6;
+  --accent: #4c8dff;
+  --accent2: #7b61ff;
+  --btn: #1d4e8f;
+  --btn-active: #4c8dff;
+}
+* { box-sizing: border-box; }
+html, body { height: 100%; margin: 0; }
+body {
+  font-family: "Segoe UI", system-ui, sans-serif;
+  background: var(--bg);
+  color: var(--text);
+  display: flex;
+  overflow: hidden;
+}
+#map { flex: 1; height: 100vh; background: #131722; }
+
+#sidebar {
+  width: 340px;
+  min-width: 300px;
+  height: 100vh;
+  overflow-y: auto;
+  background: var(--panel);
+  border-right: 1px solid var(--border);
+  padding: 16px 16px 40px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+#sidebar h1 { margin: 0; font-size: 22px; letter-spacing: .5px; }
+#sidebar h1::after { content: " ◈"; color: var(--accent2); }
+.hd-row { display: flex; align-items: center; justify-content: space-between; gap: 8px; }
+.hd-row h1 { margin: 0; }
+
+#dropzone {
+  border: 2px dashed var(--border);
+  border-radius: 10px;
+  padding: 18px 14px;
+  text-align: center;
+  cursor: pointer;
+  transition: border-color .15s, background .15s;
+}
+#dropzone:hover, #dropzone.drag { border-color: var(--accent); background: var(--panel2); }
+.dz-inner { display: flex; flex-direction: column; gap: 6px; }
+.dz-inner small { color: var(--muted); }
+
+.row { display: flex; gap: 8px; }
+.row .btn { flex: 1; }
+.btn {
+  background: var(--btn);
+  border: 1px solid rgba(255,255,255,.14);
+  color: #fff; border-radius: 8px;
+  padding: 6px 10px; cursor: pointer; font-size: 13px; font-weight: 600;
+}
+.btn.ghost { background: var(--btn); border: 1px solid rgba(255,255,255,.14); }
+.btn:hover { filter: brightness(1.15); }
+.btn.active { background: var(--btn-active); border-color: transparent; }
+
+.card {
+  background: var(--panel2);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  padding: 12px 14px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+.card h2 { margin: 0; font-size: 12px; text-transform: uppercase; letter-spacing: 1px; color: var(--muted); }
+.card h3.sub {
+  margin: 4px 0 0; font-size: 10px; text-transform: uppercase; letter-spacing: 1px;
+  color: var(--muted); opacity: .8; border-top: 1px solid var(--border); padding-top: 8px;
+}
+.card h3.sub:first-of-type { border-top: none; padding-top: 0; margin-top: 0; }
+label { display: flex; flex-direction: column; gap: 4px; font-size: 13px; color: var(--muted); }
+label.check { flex-direction: row; align-items: center; gap: 8px; color: var(--text); }
+input[type="number"], input[type="date"], select {
+  background: var(--panel);
+  border: 1px solid var(--border);
+  color: var(--text);
+  border-radius: 6px;
+  padding: 6px 8px;
+  font-size: 13px;
+}
+input.inline { width: 90px; padding: 3px 6px; }
+input[type="checkbox"] { accent-color: var(--accent); width: 16px; height: 16px; }
+
+.status {
+  background: var(--panel2);
+  border-left: 3px solid var(--accent);
+  padding: 8px 10px;
+  border-radius: 6px;
+  font-size: 12px;
+}
+.status.error { border-color: #ff5c5c; color: #ffb3b3; }
+
+/* compact single-line label/value rows (summary + display controls) */
+label.line, .line { display: flex; flex-direction: row; align-items: center; justify-content: space-between; gap: 8px; }
+.line .lbl { color: var(--muted); white-space: nowrap; font-size: 12px; }
+.line .val { color: var(--text); font-weight: 600; text-align: right; overflow-wrap: anywhere; font-size: 12px; }
+.line input, .line select { flex: 1; min-width: 0; }
+.line .ctrl { flex: 1; display: flex; gap: 6px; align-items: center; }
+.line .ctrl select { flex: 1; min-width: 0; }
+
+.legend {
+  background: var(--panel2);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  padding: 12px 14px;
+  font-size: 12px;
+}
+.legend h3 { margin: 0 0 6px; font-size: 12px; color: var(--muted); text-transform: uppercase; letter-spacing: 1px; }
+.legend .bar { height: 12px; border-radius: 6px; margin: 6px 0 4px; border: 1px solid var(--border); }
+.legend .ticks { display: flex; justify-content: space-between; color: var(--muted); font-size: 10px; }
+
+footer { margin-top: auto; font-size: 11px; color: var(--muted); line-height: 1.5; }
+
+#busy {
+  position: fixed; inset: 0; background: rgba(5,8,15,.55);
+  display: flex; align-items: center; justify-content: center; gap: 12px;
+  z-index: 2000; font-weight: 600;
+}
+.spinner {
+  width: 22px; height: 22px; border: 3px solid rgba(255,255,255,.25);
+  border-top-color: var(--accent); border-radius: 50%;
+  animation: spin .8s linear infinite;
+}
+@keyframes spin { to { transform: rotate(360deg); } }
+.hidden { display: none !important; }
+
+.leaflet-container { background: #0d1017; }
+.region-tip { color: #111; font-size: 12px; }
+.region-tip b { font-size: 13px; }
+/* Region paths must be clickable across their whole interior — including
+   unvisited (fill:none) regions and regions that were just removed. Specificity
+   must beat Leaflet's `.leaflet-pane > svg path.leaflet-interactive` rule so
+   pointer-events:all actually applies (otherwise only painted areas are hit). */
+.leaflet-pane > svg path.leaflet-interactive { pointer-events: all; }
+
+/* draggable point markers (edit mode) */
+.point-marker-ic { background: transparent; border: none; }
+.point-marker { width: 12px; height: 12px; border-radius: 50%; background: #ff8800; border: 2px solid #fff; box-shadow: 0 1px 3px rgba(0,0,0,.5); }
+
+/* export modal + date editor */
+.modal {
+  position: fixed; inset: 0; background: rgba(5,8,15,.6);
+  display: flex; align-items: center; justify-content: center;
+  z-index: 1500;
+}
+.modal-box {
+  width: min(520px, 92vw);
+  max-height: 90vh; overflow-y: auto;
+  background: var(--panel); border: 1px solid var(--border);
+  border-radius: 14px; padding: 20px;
+  display: flex; flex-direction: column; gap: 12px;
+}
+.modal-box h2 { margin: 0; }
+.muted { color: var(--muted); font-size: 12px; margin: 0; }
+.row.wrap { flex-wrap: wrap; }
+label.indent { padding-left: 26px; }
+.date-editor { display: flex; flex-direction: column; gap: 8px; font-size: 13px; }
+.date-editor label { flex-direction: row; justify-content: space-between; align-items: center; }
+.date-popup .leaflet-popup-content { margin: 14px; }
+
+#add-modal textarea {
+  width: 100%;
+  min-height: 150px;
+  background: var(--panel);
+  color: var(--text);
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  padding: 8px;
+  font-size: 13px;
+  font-family: inherit;
+  resize: vertical;
+  box-sizing: border-box;
+}
+#add-modal .muted { line-height: 1.5; }
+
+#trip-modal textarea {
+  width: 100%;
+  min-height: 130px;
+  background: var(--panel);
+  color: var(--text);
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  padding: 8px;
+  font-size: 13px;
+  font-family: inherit;
+  resize: vertical;
+  box-sizing: border-box;
+}
+.radio-group { display: flex; flex-direction: column; gap: 8px; }
+.radio-group label { display: flex; align-items: center; gap: 8px; cursor: pointer; font-size: 13px; }
+
+/* Date browser */
+.db-opts { display: flex; flex-direction: column; gap: 6px; }
+.db-stats { font-size: 11px; color: var(--muted); line-height: 1.6; border-top: 1px solid var(--border); padding-top: 6px; }
+.db-stats .db-total { color: var(--text); font-weight: 600; }
+#c-single-color { width: 28px; height: 24px; padding: 0; border: 1px solid var(--border); border-radius: 4px; cursor: pointer; vertical-align: middle; }
+
+/* edit-mode region details panel + bulk tools */
+.det-row { display: flex; justify-content: space-between; align-items: baseline; gap: 8px; }
+.bulk {
+  margin-top: 8px; padding-top: 8px;
+  border-top: 1px solid var(--border);
+  display: flex; flex-direction: column; gap: 8px;
+}
+.bulk h4 { margin: 0; font-size: 11px; text-transform: uppercase; letter-spacing: 1px; color: var(--muted); }
+.shift-row { align-items: flex-end; }
+label.shift { flex-direction: row; align-items: center; gap: 6px; }
+label.shift input { width: 80px; }
+
+/* right-side edit panel (overlays the map while edit mode is on).
+   z-index 900: above map panes (<=700) but below Leaflet controls (1000). */
+#edit-sidebar {
+  position: fixed;
+  top: 10px;
+  right: 10px;
+  bottom: auto;
+  max-height: calc(100vh - 20px);
+  width: 300px;
+  z-index: 900;
+  background: var(--panel);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  padding: 14px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  overflow-y: auto;
+  box-shadow: 0 6px 20px rgba(0,0,0,.45);
+}
+#edit-sidebar h3 {
+  margin: 0 0 6px; font-size: 11px; text-transform: uppercase; letter-spacing: 1px; color: var(--muted);
+}
+.edit-guide ul {
+  margin: 0; padding-left: 16px; font-size: 12px; color: var(--muted); line-height: 1.6;
+}
+.edit-guide b { color: var(--text); }
+.edit-block {
+  background: var(--panel2);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  padding: 12px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+.edit-block.bulk { border-top: 1px solid var(--border); margin-top: 0; padding-top: 12px; }
+#rd-status { color: var(--muted); font-size: 11px; }
+
+/* compact edit panel: tighter gaps, smaller buttons, inline date rows */
+#edit-sidebar { gap: 8px; }
+#edit-sidebar h3 { margin: 0 0 4px; }
+#edit-sidebar .edit-guide ul { line-height: 1.4; }
+#edit-sidebar .edit-block { padding: 10px; gap: 6px; }
+#edit-sidebar .edit-block.bulk { padding-top: 10px; }
+#edit-sidebar .row { gap: 6px; }
+#edit-sidebar .btn { padding: 6px 10px; font-size: 12px; }
+
+/* edit-mode toggle button (now a normal card button; active = on) */
+#btn-edit-mode { cursor: pointer; }
+#btn-edit-mode:hover { filter: brightness(1.15); }
+#btn-edit-mode.active {
+  background: var(--btn-active);
+  color: #fff;
+  border-color: transparent;
+}
+
+.draw-bar {
+  position: fixed;
+  left: 50%;
+  bottom: 18px;
+  transform: translateX(-50%);
+  z-index: 1200;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  background: var(--panel);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  padding: 10px 14px;
+  box-shadow: 0 6px 20px rgba(0,0,0,.4);
+  font-size: 13px;
+}
+.draw-bar label { flex-direction: row; align-items: center; gap: 5px; }
+.draw-bar input[type="date"] { width: 130px; }
+
+.import-log {
+  max-height: 160px;
+  overflow-y: auto;
+  font-size: 11px;
+  line-height: 1.5;
+  color: var(--muted);
+  background: var(--panel2);
+  border-radius: 6px;
+  padding: 6px 8px;
+  margin-bottom: 6px;
+  scrollbar-width: thin;
+}
+.import-log:empty { display: none; }
+.import-log .log-ok { color: #6ecf8a; }
+.import-log .log-err { color: #ff7b7b; }
+.import-log .log-entry + .log-entry { border-top: 1px solid var(--border); padding-top: 4px; margin-top: 4px; }
+.btn.small { font-size: 11px; padding: 2px 8px; }
+

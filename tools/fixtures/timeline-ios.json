@@ -1,0 +1,14 @@
+[
+  {
+    "startTime": "2022-08-01T09:00:00Z",
+    "endTime": "2022-08-01T10:00:00Z",
+    "visit": { "latitudeE7": 407128000, "longitudeE7": -740060000, "placeId": "ChIJZ", "name": "Cafe" }
+  },
+  {
+    "startTime": "2022-08-01T10:00:00Z",
+    "endTime": "2022-08-01T10:30:00Z",
+    "activity": [
+      { "startTime": "2022-08-01T10:00:00Z", "endTime": "2022-08-01T10:30:00Z", "type": "CYCLING", "location": { "latitudeE7": 407129000, "longitudeE7": -740070000 } }
+    ]
+  }
+]

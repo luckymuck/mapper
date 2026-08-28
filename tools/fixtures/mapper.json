@@ -1,0 +1,14 @@
+{
+  "generated": "2026-01-01T00:00:00.000Z",
+  "version": 1,
+  "points": [
+    { "lat": 40.7, "lng": -74.0, "ts": 1600000000000, "acc": 10, "src": "trip:Fixtures", "mode": "WALKING" },
+    { "lat": 40.8, "lng": -74.1, "ts": 1600003600000, "acc": 10, "src": "trip:Fixtures", "mode": "WALKING" }
+  ],
+  "visits": [
+    { "lat": 40.7, "lng": -74.0, "start": 1600000000000, "end": 1600003600000, "src": "trip", "addr": "Fixtures" }
+  ],
+  "manual": [
+    { "id": "US-NY", "status": "add", "first": 1600000000000, "last": 1600003600000 }
+  ]
+}

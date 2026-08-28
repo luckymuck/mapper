@@ -1,0 +1,20 @@
+# Build artifacts
+release/
+mapper-release.zip
+
+# Test dependencies and artifacts
+tools/e2e/node_modules/
+tools/e2e/tmp/
+**/shot.png
+
+# Secrets / local notes (do not publish)
+API-Carto.txt
+
+# Python
+__pycache__/
+*.pyc
+
+# OS junk
+.DS_Store
+Thumbs.db
+*.log

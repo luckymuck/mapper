@@ -1,0 +1,16 @@
+[
+  {
+    "placeVisit": {
+      "location": { "latitudeE7": 377749000, "longitudeE7": -1224194000, "placeId": "ChIJW", "address": "SF" },
+      "duration": { "startTimestampMs": "1577836800000", "endTimestampMs": "1577840400000" }
+    }
+  },
+  {
+    "activitySegment": {
+      "activityType": "IN_TRAIN",
+      "duration": { "startTimestampMs": "1577840400000", "endTimestampMs": "1577844000000" },
+      "startLocation": { "latitudeE7": 377749000, "longitudeE7": -1224194000 },
+      "endLocation": { "latitudeE7": 377780000, "longitudeE7": -1224200000 }
+    }
+  }
+]
