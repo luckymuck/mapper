@@ -7,6 +7,8 @@ Web app that turns location history (Google, Apple, or photos) into a map, highl
 
 Runs in browser; personal files never leave device.
 
+![Mapper screenshot](screenshot.png)
+
 ## Instructions
 
 Open `index.html` in a browser.
@@ -29,20 +31,20 @@ Open `index.html` in a browser.
    optional date — e.g. `Los Angeles, California, USA 8/15/2026`, `15 Aug 2026`,
    `8/15/26`, `34.0522, -118.2437 2026-08-15`. Place names are looked up online via
    OpenStreetMap Nominatim (text is sent to that service).
-3. Use the sidebar to change **region level** (Country / State / County),
+4. Use the sidebar to change **region level** (Country / State / County),
    **color metric** (Last visited / Time spent / Visit count / Rainbow by date),
    and toggle layers.
-4. **Multiple files**: dragging in more files adds them to the current map
+5. **Multiple files**: dragging in more files adds them to the current map
    (deduplicated); **Clear** starts over.
-5. **Show all region outlines** draws every country / every subdivision of visited
+6. **Show all region outlines** draws every country / every subdivision of visited
    countries as context underneath the colored regions. Unselected regions are
    shown as **lines only** (no shading).
-6. **Edit mode**: click an unvisited country to **load its subdivisions**, click a specific state/county to add it. Click a visited region to remove it, **right-click to edit its dates in the sidebar panel** (with Prev/Next to step through regions), **Shift-click** to multi-select for bulk date edits.
-7. **Draw trip…** lets you click points on the map to trace a route (dates auto-filled between a start/end), and **Add trip…** builds a trip from a list of places with dates spread across it — both add a trip visit so the trip counts toward time-spent.
-8. **Export…** opens a privacy dialog — choose exactly which data leaves your  machine (default: visited regions + summary stats only, no raw positions).
+7. **Edit mode**: click an unvisited country to **load its subdivisions**, click a specific state/county to add it. Click a visited region to remove it, **right-click to edit its dates in the sidebar panel** (with Prev/Next to step through regions), **Shift-click** to multi-select for bulk date edits.
+8. **Draw trip…** lets you click points on the map to trace a route (dates auto-filled between a start/end), and **Add trip…** builds a trip from a list of places with dates spread across it — both add a trip visit so the trip counts toward time-spent.
+9. **Export…** opens a privacy dialog — choose exactly which data leaves your  machine (default: visited regions + summary stats only, no raw positions).
    Exported `.mapper.json` files can be **re-imported** to restore the saved visited set (regions become manual additions).
-9. The points stat shows **shown / total** (e.g. `1,000 / 1,794`) whenever a
-   filter (date range, day/year, or accuracy) reduces what's displayed.
+10. The points stat shows **shown / total** (e.g. `1,000 / 1,794`) whenever a
+    filter (date range, day/year, or accuracy) reduces what's displayed.
 
 ## Supported data sources
 
@@ -102,8 +104,8 @@ auto-detects the visit tables in `*.sqlite` files.
   exports (`.mapper.json` gains a `manual` section that re-imports).
 - **Export** produces a sanitized `.mapper.json` (with granular toggles: raw points,
   exact vs date-only timestamps, coordinate precision, addresses, visits, manual
-  edits), a `.geojson` of the rendered overlays (visited regions + reachable area),
-  and a settings `.json`. Unchecked categories are omitted entirely.
+  edits), a `.geojson` of the rendered overlays (visited regions), and a settings
+  `.json`. Unchecked categories are omitted entirely.
 
 ## Project layout
 
