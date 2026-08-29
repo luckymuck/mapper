@@ -88,6 +88,11 @@ function main() {
     fs.cpSync(from, to, { recursive: true });
   }
 
+  // License travels with the release (the hosted site carries it too).
+  if (fs.existsSync(path.join(ROOT, "LICENSE"))) {
+    fs.copyFileSync(path.join(ROOT, "LICENSE"), path.join(RELEASE, "LICENSE"));
+  }
+
 fs.writeFileSync(path.join(RELEASE, "README.txt"),
   "Mapper — self-contained build.\n\n" +
   "Unzip anywhere and open index.html in a browser. It runs entirely offline.\n" +

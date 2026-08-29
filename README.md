@@ -146,6 +146,12 @@ cd tools/e2e && node e2e.js # full browser test via installed Edge
 - US counties: US Census via `us-atlas`.
 - Non-US county (online): [geoBoundaries](https://www.geoboundaries.org/) — CC BY 4.0.
 
+## License
+
+Released under the [GNU General Public License v3.0](LICENSE). Note that the
+bundled boundary data keeps its own terms (Natural Earth / geoBoundaries — see
+Attribution).
+
 ## Known limitations
 
 - Very large histories (>~1M points) are downsampled/filtered; the "time spent"
