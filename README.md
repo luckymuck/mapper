@@ -1,19 +1,15 @@
 # Mapper — Location History Visualizer
 
-A privacy-first web app that turns your location history (Google, Apple, or photos)
-into a map, highlighting everywhere you've been:
+Web app that turns location history (Google, Apple, or photos) into a map, highlighting everywhere you've been.
 
-- **Visited regions** — every country, state/province, and county you've set foot in, shaded at the finest level available per country (county where the data exists, otherwise state/province, otherwise the country itself)
-- **Recency coloring** — how recently you were last at each place
-- **Duration coloring** — estimated time spent in each area
-- **Rainbow history** — the whole timeline painted as a rainbow (oldest → newest)
+  **Visited regions** — every country, state/province, and county shaded at the finest level available. Colored by most recently, estimated time spent, or selected.
+  **Timeline trail** - lines showing trails of locations visited.
 
-Everything runs **entirely in your browser**. Your files never leave your device.
+Runs in browser; personal files never leave device.
 
-## Quick start
+## Instructions
 
-Just open `index.html` in a browser (double-click works — no server needed), or
-serve the folder with any static file server.
+Open `index.html` in a browser.
 
 > **Map tiles:** the default basemap is **Esri light** (free, keyless, works from
 > `file://`). **Esri dark**, **Esri World**, **Esri Satellite**, and
@@ -28,15 +24,11 @@ serve the folder with any static file server.
    - A `.mapper.json` file produced by the desktop tool
    - `CSV` / `GPX`
    - Photo files (JPEG/HEIC) that still contain GPS metadata
-2. **Load demo data** to see it all instantly with a synthetic world traveler. The map
-   automatically centers on the **continent where you have the most points**. Path
-   lines are split at the antimeridian so they stay on the same world copy as the
-   region outlines — USA→East Asia draws the short way (across the Pacific), and
-   zooming into Japan/China shows both the line and the coloured region together.
+2. **Load demo data** to see an example synthetic traveler. Map automatically centers on the **continent where you have the most points**. Path lines are split at the antimeridian so they stay on the same world copy as the region outlines.
 3. **Add points…** lets you type a list of places or coordinates (one per line) with an
    optional date — e.g. `Los Angeles, California, USA 8/15/2026`, `15 Aug 2026`,
    `8/15/26`, `34.0522, -118.2437 2026-08-15`. Place names are looked up online via
-   OpenStreetMap Nominatim (the text is sent to that service).
+   OpenStreetMap Nominatim (text is sent to that service).
 3. Use the sidebar to change **region level** (Country / State / County),
    **color metric** (Last visited / Time spent / Visit count / Rainbow by date),
    and toggle layers.
@@ -45,23 +37,11 @@ serve the folder with any static file server.
 5. **Show all region outlines** draws every country / every subdivision of visited
    countries as context underneath the colored regions. Unselected regions are
    shown as **lines only** (no shading).
-6. **Edit mode** (its own switch, below Layers): all countries are shown; click an
-   unvisited country to **load its subdivisions** (a spinner appears while they
-   load), then click a specific state/county to add it. Click a visited region to
-   remove it, **right-click to edit its dates in the sidebar panel** (with Prev/Next
-   to step through regions), **Shift-click** to multi-select for bulk date edits,
-   **shift all dates by N days**, or set a date range for a whole country. Regions
-   you add **stay visible after edit mode is turned off**. Analysis results are
-   cached, so a single edit, metric change, or layer toggle doesn't re-analyze
-   your data. **Draw trip…** lets you click points on the map to trace a route
-   (dates auto-filled between a start/end), and **Add trip…** builds a trip from a
-   list of places with dates spread across it — both add a trip visit so the trip
-   counts toward time-spent.
-7. **Export…** opens a privacy dialog — choose exactly which data leaves your
-   machine (default: visited regions + summary stats only, no raw positions).
-   Exported `.mapper.json` files can be **re-imported** to restore the saved
-   visited set (regions become manual additions).
-8. The points stat shows **shown / total** (e.g. `1,000 / 1,794`) whenever a
+6. **Edit mode**: click an unvisited country to **load its subdivisions**, click a specific state/county to add it. Click a visited region to remove it, **right-click to edit its dates in the sidebar panel** (with Prev/Next to step through regions), **Shift-click** to multi-select for bulk date edits.
+7. **Draw trip…** lets you click points on the map to trace a route (dates auto-filled between a start/end), and **Add trip…** builds a trip from a list of places with dates spread across it — both add a trip visit so the trip counts toward time-spent.
+8. **Export…** opens a privacy dialog — choose exactly which data leaves your  machine (default: visited regions + summary stats only, no raw positions).
+   Exported `.mapper.json` files can be **re-imported** to restore the saved visited set (regions become manual additions).
+9. The points stat shows **shown / total** (e.g. `1,000 / 1,794`) whenever a
    filter (date range, day/year, or accuracy) reduces what's displayed.
 
 ## Supported data sources
@@ -77,19 +57,6 @@ serve the folder with any static file server.
 Canonical internal model: **points** `{lat, lng, ts, acc}` and **visits**
 `{lat, lng, start, end}`. `placeVisit` durations from Google make the
 "time spent" estimate accurate; otherwise it is estimated from point intervals.
-
-## How the visualizations work
-
-- **Regions**: points are classified against admin-boundary polygons using an
-  `rbush` bounding-box index + ray-cast point-in-polygon (even-odd across holes).
-  At **county view** each country is shaded at its finest available level
-  (county → state → country). Large histories (>25k points) are aggregated onto
-  a ~1 km grid and the grid representatives are classified for speed.
-- **Heat grid**: an occupancy heat canvas (Web-Mercator-correct) of where points
-  cluster, colored by the selected metric.
-- **Recency / duration / count / rainbow**: per-region and per-cell metrics are
-  mapped through color ramps (log scales). The heat grid and region choropleth
-  share the selected metric. The rainbow sweeps hue 0→330 across the timeline.
 
 ## Admin boundary data
 
